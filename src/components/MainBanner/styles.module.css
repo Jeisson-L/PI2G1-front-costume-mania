@@ -1,0 +1,44 @@
+.hiddenInFullW {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    background: rgba(var(--card-rgb), 0.1);
+    border: 1px solid rgba(var(--card-border-rgb), 0.15);
+  }
+
+  .card:hover span {
+    transform: translateX(4px);
+  }
+}
+
+@media (max-width: 700px) {
+  .cropped {
+    width: 295px;
+    height: 315;
+    overflow: hidden;
+  }
+
+  .cropped img {
+    width: 974px !important;
+  }
+
+  .primaryBanner {
+    margin: 0px 0px 0px 97px;
+  }
+
+  .tertiaryButton {
+    width: 350px;
+    font-size: 22px;
+  }
+
+  .hiddenInFullW {
+    width: 342px;
+    display: block;
+  }
+
+  .secondaryBanner {
+    margin: 0px 0px 0px -600px;
+  }
+}

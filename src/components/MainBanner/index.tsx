@@ -1,28 +1,62 @@
-import React from 'react';
-import logo from "@assets/logo.png";
-import banner from "@assets/mainBenner.png";
-import styles from '@/styles/Home.module.css'
+import React from "react";
+import logo from "@assets/logo-mask.png";
+import banner from "@assets/mainBanner.png";
+import star from "@assets/star.svg";
+import styles from "./styles.module.css";
 import Image from "next/image";
+import Button from "../Button";
+import { Frijole } from "next/font/google";
+
+const frijole = Frijole({
+  subsets: ["latin"],
+  variable: "--font-frijole",
+  weight: "400",
+});
 
 function Banner() {
   return (
-    <div className="container mx-auto text-center">
-      <figure style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Image src={logo} alt="Logo" style={{ width: '70%', maxWidth: '717px', height: 'auto' }} />
-        <div className={`${styles.cropped}`}>
-          <Image src={banner} alt="BannerPrincipal" className={`${styles.primaryBanner}`} style={{ width: '90%', maxWidth: '1400px', height: 'auto' }} />
+    <div className="container mx-auto text-center pb-4 md:pb-12">
+      <figure className="flex flex-col items-center">
+        <span className="flex flex-col md:flex-row items-center gap-4">
+          <Image className="-rotate-12" src={logo} alt="Logo" width="120" />
+          <h1
+            className={`${frijole.className} text-4xl md:text-6xl ${styles.title}`}
+          >
+            CostumeMania
+          </h1>
+        </span>
+        <div className={`${styles.cropped} flex justify-center`}>
+          <Image
+            src={banner}
+            alt="BannerPrincipal"
+            className={`${styles.primaryBanner}`}
+            style={{ width: "90%", maxWidth: "1400px", height: "auto" }}
+          />
         </div>
       </figure>
-      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '20px', margin: '0px 0px 40px 0px' }}>
-        <button type="submit" className={`${styles.primaryButton}`}>Shop Now</button>
-        <button type="submit" className={`${styles.secondaryButton}`}>Flash Sales</button>
+      <div className="flex flex-col items-center gap-8">
+        <span className="relative">
+          <h4 className="bg-white border-2 border-purple-2 border-primary rounded-full p-6 font-bold text-xl italic hover:shadow-md hover:border-2 hover:border-purple-3">
+            Small Moments, Monster Memories
+          </h4>
+          <div className="absolute -top-[1.225rem] right-10">
+            <Image src={star} alt="star" />
+          </div>
+        </span>
+        <div className="flex flex-row justify-center gap-6 mb-8 md:mb-10">
+          <Button buttonStyle="primary" label="Shop Now" />
+          <Button buttonStyle="secondary" label="Flash Sales" />
+        </div>
       </div>
-      <div>
-        <button type="submit" className={`${styles.tertiaryButton}`}>Small Moments, Monster Memories</button>
-      </div>
-      <figure style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div></div>
+      <figure className="flex flex-col items-center">
         <div className={`${styles.cropped} ${styles.hiddenInFullW}`}>
-          <Image src={banner} className={`${styles.secondaryBanner}`} alt="BannerPrincipal" style={{ width: '90%', maxWidth: '1300px', height: 'auto' }} />
+          <Image
+            src={banner}
+            className={`${styles.secondaryBanner}`}
+            alt="BannerPrincipal"
+            style={{ width: "90%", maxWidth: "1300px", height: "auto" }}
+          />
         </div>
       </figure>
     </div>

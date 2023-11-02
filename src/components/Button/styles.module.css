@@ -1,0 +1,49 @@
+.primary {
+  background-color: theme('colors.purple-2');
+  color: theme('colors.white');;
+  border-radius: 4px;
+  padding: 16px 8px;
+  width: 150px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+    rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+
+.secondary {
+  background-color: theme('colors.white');;
+  border: solid 2px theme('colors.purple-2');
+  color: theme('colors.purple-2');
+  border-radius: 4px;
+  padding: 16px 8px;
+  width: 150px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+    rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+
+.primary:hover {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+.secondary:hover {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+.smallButton {
+  width: 7rem;
+  height: 2.25rem;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0 0.25rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  padding-left: 0.5rem;
+}
+
+.smallButton:hover {
+  transform: none;
+  transition: none;
+  background-color: theme('colors.white');;
+  color: theme('colors.purple-2');
+}
