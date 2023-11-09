@@ -33,6 +33,21 @@ const ButtonSection = ({ children, className }: { children: ReactNode, className
 
 const TextSection = ({ children, className }: { children: ReactNode, className?: string }) => {
   return <div className={`${className}`}>{children}</div>;
+=======
+const Header = ({ children }: { children: ReactNode }) => {
+  return <div className="text-center p-4">{children}</div>;
+};
+
+const Title = ({ children }: { children: ReactNode }) => {
+  return <h2 className="text-2xl font-bold">{children}</h2>;
+};
+
+const ButtonSection = ({ children }: { children: ReactNode }) => {
+  return <div className="mt-4 flex justify-center gap-4">{children}</div>;
+};
+
+const TextSection = ({ children }: { children: ReactNode }) => {
+  return <div className="mt-4 flex justify-center gap-4">{children}</div>;
 };
 
 const Body = ({

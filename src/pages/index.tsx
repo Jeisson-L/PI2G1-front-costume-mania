@@ -43,6 +43,7 @@ const HomePage: NextPage<Props> = ({
   popularCostumes,
   categories,
 }) => {
+
   return (
     <RootLayout>
       <Head>
