@@ -1,8 +1,8 @@
 import { costumes } from "@/mockData/customer"
-import { Costume } from "@/interfaces/costume"
+import { ApiCostume } from "@/interfaces/costume"
 import { NextApiRequest, NextApiResponse } from "next"
 
-type Data = Costume[] | { message: string }
+type Data = ApiCostume[] | { message: string }
 
 export default function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
     if (req.method === "GET") {
