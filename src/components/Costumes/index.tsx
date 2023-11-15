@@ -5,6 +5,9 @@ import Button from "../Button";
 import logoText from "@assets/logo-text.png";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useDispatch, useSelector } from "react-redux";
+import { CartCostume, addItem, getCartState } from "@/store/slices/cartSlice";
+import { addFavorite, getFavoritesState, removeFavorite } from "@/store/slices/favoritesSlices";
 
 interface Props {
   costume: ApiCostume;
@@ -12,41 +15,42 @@ interface Props {
 
 export const CostumeCard: FC<Props> = ({ costume }) => {
   const { data: session } = useSession();
-
+  const dispatch = useDispatch();
   const router = useRouter();
-  const [favs, setFavs] = useState<ApiCostume[]>([]);
-
-  useEffect(() => {
-    const favs = localStorage.getItem("favs");
-    if (favs) setFavs(JSON.parse(favs));
-  }, []);
+  const [selectedSize, setSelectedSize] = useState<string>();
+  const { favorites } = useSelector(getFavoritesState)
 
   const handleFavClick = () => {
     if (!session) {
       router.push("/auth/login");
       return;
     }
-    console.log(costume)
-    const favs = localStorage.getItem("favs");
-    if (!favs) {
-      const newFavs = [costume];
-      localStorage.setItem("favs", JSON.stringify(newFavs));
-      setFavs(newFavs);
-      return;
-    }
-    const existingFavs = JSON.parse(favs);
-    existingFavs.push(costume);
-    localStorage.setItem("favs", JSON.stringify(existingFavs));
-    setFavs(existingFavs);
+
+    dispatch(addFavorite(costume));
   };
 
   const handleFavRemove = () => {
-    const favs = localStorage.getItem("favs");
-    if (!favs) return;
-    const existingFavs: ApiCostume[] = JSON.parse(favs);
-    const newFavs = existingFavs.filter((e) => e.idModel !== costume.idModel);
-    localStorage.setItem("favs", JSON.stringify(newFavs));
-    setFavs(newFavs);
+    dispatch(removeFavorite(costume.idModel));
+  };
+
+  const handleImageClick = () => {
+    router.push(`/costumes/${costume.idModel}`);
+  };
+
+  const handleSizeClick = (size: string) => {
+    setSelectedSize((prevSize) => (prevSize === size ? undefined : size));
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedSize) return;
+
+    const cartItem: CartCostume = {
+      ...costume,
+      quantity: 1,
+    };
+
+    dispatch(addItem(cartItem));
+    setSelectedSize(undefined);
   };
 
   return (
@@ -58,6 +62,7 @@ export const CostumeCard: FC<Props> = ({ costume }) => {
           alt={costume.name}
           height={320}
           width={288}
+          onClick={handleImageClick}
         />
         <div className="px-4 py-3 w-64">
           <p className="text-lg font-bold text-black truncate block capitalize">
@@ -70,20 +75,31 @@ export const CostumeCard: FC<Props> = ({ costume }) => {
           </div>
           <div className="flex items-center">
             {costume.sizes?.map((size) => (
-              <div
+              <button
                 key={size.noSize}
-                className="bg-white dark:bg-white-500 text-purple-2 dark:text-purple-2 dark:border-purple-2 dark:border dark:rounded py-1 px-2 mr-2 text-sm"
+                className={`dark:border-purple-2 dark:border dark:rounded py-1 px-2 mr-2 text-sm ${
+                  selectedSize === size.noSize
+                    ? "bg-purple-2 text-white"
+                    : "bg-white text-purple-2"
+                }`}
+                onClick={() => handleSizeClick(size.noSize)}
               >
                 {size.noSize}
-              </div>
+              </button>
             ))}
           </div>
           <div className="flex items-center justify-between">
-            <Button label="Add to Cart" buttonStyle="primary" size="small" />
+            <Button
+              label="Add to Cart"
+              buttonStyle="primary"
+              size="small"
+              onClick={handleAddToCart}
+              disabled={!selectedSize && true}
+            />
             <button
               className="flex items-center justify-center rounded-full bg-orange-2 w-10 h-10 text-white drop-shadow-sm"
               onClick={
-                favs.some((e) => e.idModel === costume.idModel)
+                favorites.some((e) => e.idModel === costume.idModel)
                   ? handleFavRemove
                   : handleFavClick
               }
@@ -91,7 +107,7 @@ export const CostumeCard: FC<Props> = ({ costume }) => {
               <svg
                 className="w-5 h-5 transform transition-transform duration-300 hover:orange-2"
                 fill={
-                  favs.some((e) => e.idModel === costume.idModel)
+                  favorites.some((e) => e.idModel === costume.idModel)
                     ? "white"
                     : "none"
                 }
