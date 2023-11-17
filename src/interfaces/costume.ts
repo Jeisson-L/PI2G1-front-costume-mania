@@ -1,8 +1,15 @@
 export interface Costume {
-    id: number,
-    name: string,
+    // id: number,
+    // name: string,
+    // price: number,
+    // url_image: string,
+    // sizes: Size[]
+    modelId: number,
+    model: string,
     price: number,
-    url_image: string,
+    image: string,
+    sizeType: number,
+    category: string
     sizes: Size[]
 }
 
@@ -13,19 +20,43 @@ export interface Size {
     size_description: string
 }
 
+export interface ApiCostumeResponse {
+    content:          ApiCostume[] | [];
+    pageable:         Pageable;
+    totalPages:       number;
+    totalElements:    number;
+    last:             boolean;
+    size:             number;
+    number:           number;
+    sort:             any[];
+    numberOfElements: number;
+    first:            boolean;
+    empty:            boolean;
+}
+
 export interface ApiCostume {
-    idModel:  number;
-    name:     string;
-    urlImage: string | null;
-    category: Category;
+    model:    string;
+    modelId:  number;
+    category: string;
+    image:    string;
+    sizeType: number;
+    price:    number;
     sizes:    ApiSize[];
-    price: number;
 }
 
 export interface ApiSize {
-    quantity:        number;
-    noSize:          string;
-    sizeDescription: string;
+    idCatalog: number;
+    size:      string;
+    quantity:  number;
+}
+
+export interface Pageable {
+    pageNumber: number;
+    pageSize:   number;
+    sort:       any[];
+    offset:     number;
+    unpaged:    boolean;
+    paged:      boolean;
 }
 
 export interface Category {
@@ -33,15 +64,13 @@ export interface Category {
     name:       string;
 }
 
-export interface Model {
-    idModel:   number;
-    nameModel: string;
-    category:  Category;
-    urlImage:  null;
-}
-
 export interface Sort {
     empty:    boolean;
     sorted:   boolean;
     unsorted: boolean;
 }
+
+export type KeyValue = {
+    key: string;
+    value: string;
+  };

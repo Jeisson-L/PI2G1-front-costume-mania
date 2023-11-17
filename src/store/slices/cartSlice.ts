@@ -24,12 +24,12 @@ export const cartSlice = createSlice({
       action: PayloadAction<CartCostume>
     ) => {
       const newItem = action.payload;
-      const existingItem = state.items.find(item => item.idModel === newItem.idModel);
+      const existingItem = state.items.find(item => item.modelId === newItem.modelId);
     
+      console.log(newItem)
       if (existingItem) {
-        (existingItem as CartCostume).quantity += 1;
+        (existingItem as CartCostume).quantity += newItem.quantity;
       } else {
-        newItem.quantity = 1;
         state.items.push(newItem);
       }
     
@@ -42,7 +42,7 @@ export const cartSlice = createSlice({
       action: PayloadAction<number>
     ) => {
       const indexToRemove = state.items.findIndex(
-        (item) => item.idModel === action.payload
+        (item) => item.modelId === action.payload
       );
       if (indexToRemove !== -1) {
         const removedItem = state.items.splice(indexToRemove, 1)[0];
