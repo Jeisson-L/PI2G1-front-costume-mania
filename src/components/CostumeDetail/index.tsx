@@ -1,18 +1,19 @@
-import { ApiCostume, Costume } from "@/interfaces/costume";
+import { ApiCostume, CartCostume, SelectedSize } from "@/interfaces/costume";
 import Image from "next/image";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import Button from "../Button";
 import logoText from "@assets/logo-text.png";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addFavorite,
+  addFav,
   getFavoritesState,
-  removeFavorite,
+  removeFav,
 } from "@/store/slices/favoritesSlices";
-import { CartCostume, addItem } from "@/store/slices/cartSlice";
+import { addItem, getCartState } from "@/store/slices/cartSlice";
 import StepInput from "../StepInput";
+import { AppDispatch } from "@/store/store";
 
 interface Props {
   costume: ApiCostume;
@@ -21,11 +22,12 @@ interface Props {
 export const CostumeCardDetail: FC<Props> = ({ costume }) => {
   const { data: session } = useSession();
   const router = useRouter();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { favorites } = useSelector(getFavoritesState);
 
-  const [selectedSize, setSelectedSize] = useState<string>();
+  const [selectedSize, setSelectedSize] = useState<SelectedSize>();
   const [quantity, setQuantity] = useState(1);
+  const { items: cartItems } = useSelector(getCartState);
 
   const handleFavClick = () => {
     if (!session) {
@@ -33,23 +35,35 @@ export const CostumeCardDetail: FC<Props> = ({ costume }) => {
       return;
     }
 
-    dispatch(addFavorite(costume));
+    dispatch(addFav(costume.modelId));
   };
 
   const handleFavRemove = () => {
-    dispatch(removeFavorite(costume.modelId));
+    const fav = favorites.find((e) => e.idModel === costume.modelId);
+    if (!fav) return;
+    const { idFav } = fav;
+    dispatch(removeFav(idFav));
   };
 
-  const handleSizeClick = (size: string) => {
-    setSelectedSize((prevSize) => (prevSize === size ? undefined : size));
+  const handleSizeClick = ({ idCatalog, size }: SelectedSize) => {
+    setSelectedSize((prevSize) =>
+      prevSize?.idCatalog === idCatalog ? undefined : { idCatalog, size }
+    );
+    const selectedItem = cartItems.find((e) => e.idCatalog === idCatalog);
+    if (selectedItem) {
+      setQuantity(selectedItem.quantity);
+    } else {
+      setQuantity(1);
+    }
   };
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
 
     const cartItem: CartCostume = {
-      ...costume,
+      ...selectedSize,
       quantity: quantity,
+      costume,
     };
 
     dispatch(addItem(cartItem));
@@ -84,11 +98,16 @@ export const CostumeCardDetail: FC<Props> = ({ costume }) => {
                   <button
                     key={size.size}
                     className={`dark:border-purple-2 dark:border dark:rounded py-2 px-3 mr-2 text-sm ${
-                      selectedSize === size.size
+                      selectedSize?.idCatalog === size.idCatalog
                         ? "bg-purple-2 text-white"
                         : "bg-white text-purple-2"
                     }`}
-                    onClick={() => handleSizeClick(size.size)}
+                    onClick={() =>
+                      handleSizeClick({
+                        idCatalog: size.idCatalog,
+                        size: size.size,
+                      })
+                    }
                   >
                     {size.size}
                   </button>
@@ -103,24 +122,28 @@ export const CostumeCardDetail: FC<Props> = ({ costume }) => {
                   <div>
                     <p className="text-base sm:text-2xl font-bold">Quantity</p>
                     <p>
-                      Available stock:{" "}
+                      Available stock: {""}
                       {
-                        costume.sizes.find((e) => e.size === selectedSize)
-                          ?.quantity
+                        costume.sizes.find(
+                          (e) => e.idCatalog === selectedSize.idCatalog
+                        )?.quantity
                       }
                     </p>
                   </div>
                   <StepInput
                     max={
-                      costume.sizes.find((e) => e.size === selectedSize)
-                        ?.quantity || 1
+                      costume.sizes.find(
+                        (e) => e.idCatalog === selectedSize.idCatalog
+                      )?.quantity || 1
                     }
                     min={1}
+                    state={quantity}
                     setState={setQuantity}
                   />
                 </>
               )}
             </section>
+
             <section className={`flex w-full justify-between items-center`}>
               <p className="text-base sm:text-2xl font-bold"> Price</p>
 
@@ -131,7 +154,11 @@ export const CostumeCardDetail: FC<Props> = ({ costume }) => {
 
             <section className={`flex justify-between w-full items-center`}>
               <Button
-                label="Add to Cart"
+                label={
+                  cartItems.some((e) => e.idCatalog === selectedSize?.idCatalog)
+                    ? "Modify"
+                    : "Add to cart"
+                }
                 buttonStyle="primary"
                 size="large"
                 onClick={handleAddToCart}
@@ -140,7 +167,7 @@ export const CostumeCardDetail: FC<Props> = ({ costume }) => {
               <button
                 className="flex items-center justify-center rounded-full bg-orange-2 w-10 h-10 text-white drop-shadow-sm"
                 onClick={
-                  favorites.some((e) => e.modelId === costume.modelId)
+                  favorites.some((e) => e.idModel === costume.modelId)
                     ? handleFavRemove
                     : handleFavClick
                 }
@@ -148,7 +175,7 @@ export const CostumeCardDetail: FC<Props> = ({ costume }) => {
                 <svg
                   className="w-5 h-5 transform transition-transform duration-300 hover:orange-2"
                   fill={
-                    favorites.some((e) => e.modelId === costume.modelId)
+                    favorites.some((e) => e.idModel === costume.modelId)
                       ? "white"
                       : "none"
                   }
