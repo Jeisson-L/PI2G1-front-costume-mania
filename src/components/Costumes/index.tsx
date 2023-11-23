@@ -34,7 +34,7 @@ export const CostumeCard: FC<Props> = ({ costume }) => {
       return;
     }
 
-    dispatch(addFav(costume.modelId));
+    dispatch(addFav({ idModel: costume.modelId, idUser: session.user.user_id, token: session.user.token }));
   };
 
   const handleFavRemove = () => {

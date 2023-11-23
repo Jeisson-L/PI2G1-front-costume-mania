@@ -1,19 +1,21 @@
+import { ApiShipping } from "@/interfaces/shipping";
 import { NextApiRequest, NextApiResponse } from "next";
+
+type Data = ApiShipping[] | { message: string };
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<Data>
 ) {
   if (req.method === "GET") {
-    const { id } = req.query;
-    const url = `${process.env.PRODUCT_API_URL}/catalog/byModel/${id}`;
+    let url = `${process.env.CATALOG_API_URL}/shipping`;
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       console.error(response);
       throw new Error("Service unavailable");
     }
-    
+
     const data = await response.json();
     res.status(200).json(data);
   } else {

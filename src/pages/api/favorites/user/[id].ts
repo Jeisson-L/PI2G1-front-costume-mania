@@ -8,7 +8,13 @@ export default async function handler(
     const { id } = req.query;
     const url = `${process.env.PRODUCT_API_URL}/fav/user/${id}`;
     const response = await fetch(url);
+    
     let data;
+    if (!response.ok) {
+      console.error(response)
+      throw new Error("Service unavailable");
+    }
+    
     if (response.ok) {
       data = await response.json();
     } else {
@@ -16,8 +22,7 @@ export default async function handler(
     }
 
     res.status(200).json(data);
-  }
-  if (req.method === "POST") {
+  } else if (req.method === "POST") {
     res.status(200).json("asda");
   } else {
     res.status(400).json({ message: "Método no permitido" });

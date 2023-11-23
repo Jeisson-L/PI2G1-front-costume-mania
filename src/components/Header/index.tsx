@@ -22,6 +22,8 @@ import {
 import { fetchFavs, getFavoritesState } from "@/store/slices/favoritesSlices";
 import { FetchResult } from "@/interfaces/costume";
 import { PayloadAction } from "@reduxjs/toolkit";
+import { Purchase } from "@/interfaces/user";
+import Swal from "sweetalert2";
 
 const Header = ({ simple = false }: { simple?: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,10 +34,10 @@ const Header = ({ simple = false }: { simple?: boolean }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (status === "idle") {
-      dispatch(fetchFavs());
+    if (status === "idle" && session) {
+      dispatch(fetchFavs(Number(session.user.user_id)));
     }
-  }, [dispatch, status]);
+  }, [dispatch, session, status]);
 
   const handleRemoveFromCart = (idCatalog: number) => {
     dispatch(removeItem(idCatalog));
@@ -48,14 +50,17 @@ const Header = ({ simple = false }: { simple?: boolean }) => {
       quantitySold: e.quantity,
     }));
 
-    const { payload } = (await dispatch(validateCart(cart))) as PayloadAction<
-      FetchResult & {
-        shipping: number;
-        total: number;
-        errorMessage: string | null;
-      }
-    >;
-    console.log(payload);
+    if (session) {
+      const { payload } = (await dispatch(
+        validateCart({ cart: cart, idUser: session.user.user_id })
+      )) as PayloadAction<
+        FetchResult & {
+          shipping: number;
+          total: number;
+          errorMessage: string | null;
+        }
+      >;
+    }
   };
 
   const submitOrder = async () => {
@@ -64,14 +69,22 @@ const Header = ({ simple = false }: { simple?: boolean }) => {
       quantitySold: e.quantity,
     }));
 
-    const { payload } = (await dispatch(submitCart(cart))) as PayloadAction<
-      FetchResult & {
-        shipping: number;
-        total: number;
-        errorMessage: string | null;
-      }
-    >;
-    console.log(payload);
+    if (session) {
+      const { payload } = (await dispatch(
+        submitCart({
+          cart: cart,
+          idUser: session.user.user_id,
+          token: session.user.token,
+        })
+      )) as PayloadAction<Purchase>;
+      
+      Swal.fire({
+        icon: "success",
+        title: `Purchase Successfull`,
+        text: `Invoice n°${payload.invoiceNumber} generated. Total: $ ${payload.total.toFixed(2)}`,
+      });
+      router.push("/");
+    }
   };
   //
 
@@ -109,7 +122,7 @@ const Header = ({ simple = false }: { simple?: boolean }) => {
                 buttonIcon={
                   !simple ? <Image src={bwLogo} alt="user avatar" /> : null
                 }
-                buttonText={session.user.name}
+                buttonText={session.user.email}
               >
                 <Dropdown.Item onClick={() => router.push("/account")}>
                   My Account
@@ -128,14 +141,14 @@ const Header = ({ simple = false }: { simple?: boolean }) => {
                       key={idx}
                       onClick={() => router.push(`/costumes/${fav.idModel}`)}
                     >
-                      <div className="flex justify-between w-full gap-4 items-center">
-                        <span className="text-wrap">{fav.nameModel} </span>
+                      <div className="flex justify-between gap-4 items-center">
                         <Image
                           src={fav.urlImage || logoText}
                           alt={`${fav.nameModel}'s image`}
                           height={50}
-                          width={50}
+                          width={35}
                         />
+                        <span className="text-sm">{fav.nameModel}</span>
                       </div>
                     </Dropdown.Item>
                   ))
@@ -198,6 +211,7 @@ const Header = ({ simple = false }: { simple?: boolean }) => {
                 <button onClick={submitOrder}>SUBMIT</button>
               )}
             </div>
+            <NavLink route="/cart/checkout" textColor="black"> CHECKOUT </NavLink>
           </Dropdown>
         </nav>
         <button
