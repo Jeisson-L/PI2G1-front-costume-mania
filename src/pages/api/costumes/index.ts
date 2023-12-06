@@ -28,8 +28,8 @@ export default async function handler(
       if (response.status === 200) {
         const data = await response.json();
         res.status(200).json(data);
-      } else if (response.status === 404) {
-        res.status(404).end();
+      } else if (response.status === 204) {
+        res.status(204).end();
       } else {
         console.error(response);
         throw new Error("Server error");

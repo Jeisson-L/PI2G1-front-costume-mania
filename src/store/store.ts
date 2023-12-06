@@ -18,6 +18,9 @@ import {
 // Existing reducers
 import cartSlice from './slices/cartSlice';
 import favoritesSlices from './slices/favoritesSlices';
+import invoiceSlice from './slices/invoiceSlice';
+import catalogSlice from './slices/catalogSlice';
+import modelSlice from './slices/modelSlice';
 
 const persistConfig = {
   key: 'root', // key for the persistor
@@ -32,6 +35,9 @@ const persistedReducer = persistReducer(
   combineReducers({
     cart: cartSlice,
     favorites: favoritesSlices,
+    invoiceStatus: invoiceSlice,
+    catalog: catalogSlice,
+    model: modelSlice
   })
 );
 

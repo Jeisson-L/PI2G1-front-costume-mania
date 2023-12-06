@@ -1,18 +1,142 @@
 import SimpleLayout from "@/layouts/simpleLayout";
 import Head from "next/head";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Frijole } from "next/font/google";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { AiOutlineHome } from "react-icons/ai";
 import { Tab } from "@headlessui/react";
+import AdminCatalog from "@/components/AdminCatalog";
+import { GetServerSideProps, NextPage } from "next";
+import { getServerSession } from "next-auth";
+import { getAdminCatalog, getSizes } from "@/services/admin.catalog.service";
+import { authOptions } from "../api/auth/[...nextauth]";
+import { Model, Size, TableCatalog } from "@/interfaces/catalog";
+import {
+  getAdminInvoices,
+  getInvoiceStatus,
+} from "@/services/admin.invoice.service";
+import { TableInvoice } from "@/interfaces/invoice";
+import AdminInvoices from "@/components/AdminInvoices";
+import { saveInvoiceStatus } from "@/store/slices/invoiceSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store/store";
+import { KeyValue } from "@/interfaces/costume";
+import { getAdminCategories } from "@/services/admin.category.service";
+import { TableCategory } from "@/interfaces/category";
+import AdminCategories from "@/components/AdminCategories";
+import { useSession } from "next-auth/react";
+import AdminModels from "@/components/AdminModels";
+import { getAdminModel } from "@/services/admin.models.service";
+import { saveModels, saveSizes } from "@/store/slices/catalogSlice";
+import { saveCategories } from "@/store/slices/modelSlice";
+import { TableModel } from "@/interfaces/model";
 
 const frijole = Frijole({
   subsets: ["latin"],
   weight: "400",
 });
 
-function AdminPage() {
+type Props = {
+  catalogs: TableCatalog[];
+  invoices: TableInvoice[];
+  invoiceStatus: KeyValue[];
+  categories: TableCategory[];
+  models: TableModel[];
+  sizes: Size[];
+};
+
+const AdminPage: NextPage<Props> = ({
+  catalogs: initialCatalogs,
+  invoices: initialInvoices,
+  invoiceStatus,
+  categories: initialCategories,
+  models: initialModels,
+  sizes,
+}) => {
   const tabs = ["Catalog", "Categories", "Models", "Sales"];
+  const dispatch = useDispatch<AppDispatch>();
+  const { data: session } = useSession();
+  // CATEGORIES
+  const [categories, setCategories] =
+    useState<TableCategory[]>(initialCategories);
+  // INVOICES
+  const [invoices, setInvoices] = useState<TableInvoice[]>(initialInvoices);
+  // CATALOG
+  const [catalog, setCatalog] = useState<TableCatalog[]>(initialCatalogs);
+  // MODELS
+  const [models, setModels] = useState<TableModel[]>(initialModels);
+
+  // BUSCAR CATALOGOS ACTUALIZADAS
+  const fetchUpdatedCatalogs = async () => {
+    try {
+      const response = await fetch(`/api/catalog`);
+      if (response.ok) {
+        const updatedCatalog = await response.json();
+        setCatalog(updatedCatalog);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // BUSCAR CATEGORIAS ACTUALIZADAS
+  const fetchUpdatedCategories = async () => {
+    try {
+      const response = await fetch(`/api/categories/admin`, {
+        headers: {
+          Authorization: `Bearer ${session?.user.token}`,
+        },
+      });
+      if (response.ok) {
+        const updatedCategories = await response.json();
+        setCategories(updatedCategories);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // BUSCAR INVOICES ACTUALIZADAS
+  const fetchUpdatedInvoices = async () => {
+    try {
+      const response = await fetch(`/api/invoices`);
+      if (response.ok) {
+        const updatedInvoices = await response.json();
+        setInvoices(updatedInvoices);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // BUSCAR MODELS ACTUALIZADOS
+  const fetchUpdatedModels = async () => {
+    try {
+      const response = await fetch(`/api/models`);
+      if (response.ok) {
+        const updatedModels = await response.json();
+        setModels(updatedModels);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    dispatch(saveInvoiceStatus(invoiceStatus));
+  }, [dispatch, invoiceStatus]);
+
+  useEffect(() => {
+    dispatch(saveCategories(categories));
+  }, [categories, dispatch]);
+
+  useEffect(() => {
+    dispatch(saveSizes(sizes));
+  }, [sizes, dispatch]);
+
+  useEffect(() => {
+    dispatch(saveModels(models));
+  }, [models, dispatch]);
 
   return (
     <SimpleLayout>
@@ -37,15 +161,15 @@ function AdminPage() {
           listClasses="hover:underline mx-2 font-bold"
           capitalizeLinks
         />
-        <div className="flex gap-8">
+        <div className="flex flex-col md:flex-row gap-8">
           <Tab.Group>
-            <Tab.List className="flex flex-col bg-purple-3 bg-opacity-50 md:text-lg p-4 gap-1 md:gap-2 justify-center mb-2 shadow-md rounded">
+            <Tab.List className="flex flex-row md:flex-col bg-purple-3 bg-opacity-50 md:text-lg p-4 gap-1 md:gap-2 justify-center mb-2 shadow-md rounded self-start w-full md:w-auto">
               {tabs.map((e, idx) => (
                 <Tab
                   key={idx}
                   className={({
                     selected,
-                  }) => `w-full rounded-lg py-2.5 px-4 leading-5 text-orange-2 ring-white/60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-1 text-start 
+                  }) => `w-full rounded-lg py-2.5 px-4 leading-5 text-orange-2 ring-white/60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-1 text-center md:text-start 
                     ${
                       selected
                         ? "bg-white shadow"
@@ -58,20 +182,25 @@ function AdminPage() {
             </Tab.List>
             <Tab.Panels className="w-full">
               <Tab.Panel>
-                {/* Crear componente individual - CATALOG */}
-                <p>Crear componente individual - CATALOG</p>
+                <AdminCatalog
+                  onSave={fetchUpdatedCatalogs}
+                  catalogs={catalog}
+                />
               </Tab.Panel>
               <Tab.Panel>
-                {/* Crear componente individual - CATEGORIES */}
-                <p>Crear componente individual - CATEGORIES</p>
+                <AdminCategories
+                  onSave={fetchUpdatedCategories}
+                  categories={categories}
+                />
               </Tab.Panel>
               <Tab.Panel>
-                {/* Crear componente individual - MODELS */}
-                <p>Crear componente individual - MODELS</p>
+                <AdminModels models={models} onSave={fetchUpdatedModels} />
               </Tab.Panel>
               <Tab.Panel>
-                {/* Crear componente individual - SALES */}
-                <p>Crear componente individual - SALES</p>
+                <AdminInvoices
+                  onSave={fetchUpdatedInvoices}
+                  invoices={invoices}
+                />
               </Tab.Panel>
             </Tab.Panels>
           </Tab.Group>
@@ -79,6 +208,59 @@ function AdminPage() {
       </section>
     </SimpleLayout>
   );
-}
+};
+
+export const getServerSideProps: GetServerSideProps = async ({
+  query,
+  req,
+  res,
+}) => {
+  const session = await getServerSession(req, res, authOptions);
+  if (session) {
+    const { token, user_id: idUser } = session?.user;
+
+    try {
+      // CATALOG
+      const catalogs = await getAdminCatalog();
+      // INVOICES
+      const invoices = await getAdminInvoices();
+      // SHIPPING STATUS
+      const invoiceStatus = await getInvoiceStatus();
+      // CATEGORIES
+      const categories = await getAdminCategories({ token });
+      // MODELS
+      const models = await getAdminModel();
+      // SIZES
+      const sizes = await getSizes();
+
+      return {
+        props: {
+          catalogs,
+          invoices,
+          invoiceStatus,
+          categories,
+          models,
+          sizes,
+        },
+      };
+    } catch (error) {
+      // Handle errors if necessary
+      console.error("Error fetching data:", error);
+      return {
+        props: {
+          apiAdminCatalog: null,
+          apiAdminInvoices: null,
+        },
+      };
+    }
+  }
+
+  return {
+    redirect: {
+      destination: "/",
+      permanent: false,
+    },
+  };
+};
 
 export default AdminPage;
